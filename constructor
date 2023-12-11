@@ -1,0 +1,93 @@
+/*
+ * board.cpp
+ * CS11 Sushi Go
+ */
+
+#include "board.h"
+
+
+Board::Board(){
+    clearBoard();
+}
+
+/* drawBoard
+ * Input: A pointer to an array of 3 Players, p
+ *        A number indicating the index of the player whose turn
+ *        it currently is (0, 1, or 2), turn
+ * Description: Draws all of board elements for a given players turn
+ * Output: Prints the board to standard output
+ */
+void Board::drawBoard(Player *players, int turn){
+    //reset the screen
+    clearBoard();
+    screen_clear();
+    screen_home();
+    
+    for(int i = 0; i < PLAYER_COUNT; i++){
+        if(turn >= 0){
+            drawPlayer(i, players + i, turn);
+        }else{
+            drawRound(i, players + i);
+        }
+    }
+
+    //print out the finished board
+    for(int i = 0; i < BOARD_HEIGHT - 6; i++){
+        for(int j = 0; j < BOARD_WIDTH; j++){
+            if(board_color[i][j] != "white"){
+                screen_fg(board_color[i][j]);
+            }
+            cout << board[i][j];
+            screen_fg("white");
+        }
+        cout << endl;
+   } 
+   cout << endl; 
+}
+
+/* drawScore
+ * Input: A pointer to an array of 3 Players, p
+ * Description: Draws a summary of the round's scoring
+ * Output: Prints the summary to standard output
+ */
+void Board::drawScore(Player *players){
+    drawBoard(players, -1);
+}
+
+//draws a player's chosen and unplayed hands
+void Board::drawPlayer(int p_index, Player *player, int turn){
+    int chosen_size;
+    bool myTurn = (p_index == turn) ? true : false;
+    int vpos = (p_index * (CARD_HEIGHT + 3)) + p_index;
+    Vector *p_hand = player->getPassingHand();
+    Vector *r_hand = player->getRevealedCards();
+
+    //draw player heading
+    vpos++;
+    string label = "Player " + to_string(p_index + 1);
+    drawLabel(vpos, 4, label);
+    label = "Total Points: " + to_string(player->getScore());
+    drawLabel(vpos, 20, label);
+    label = "Total Puddings: " + to_string(player->getPuddingCount());
+    drawLabel(vpos, 40, label);
+    vpos++;
+
+    //draw the chosen cards that have been revealed to all players
+    chosen_size = r_hand->size();
+    for(int i = 0; i < chosen_size; i++){
+        drawCard(vpos, (i * CARD_WIDTH) + 1, i + 1, r_hand->at(i), false);
+    }
+    
+    //draw the unselected cards in the passing hand
+    for(int i = 0; i < p_hand->size(); i++){
+        int hpos = ((i + chosen_size) * CARD_WIDTH) + 1;
+        if(myTurn){
+            drawCard(vpos, hpos, i + 1, p_hand->at(i), true);
+        }else{
+            drawCard(vpos, hpos, 0, nullptr, true);
+        }
+    }
+}
+
+//draws a summary of a players played cards
+void Board::drawRound(int p_index
